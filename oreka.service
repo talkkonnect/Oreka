@@ -1,0 +1,43 @@
+[Unit]
+Description=Oreka VoIP Recorder (orkaudio)
+Documentation=https://github.com/talkkonnect/Oreka
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# Path to the orkaudio binary. Adjust if your build installed it elsewhere
+# (the installer prints the detected location at the end of its run).
+# The trailing "debug" keyword makes orkaudio run in the foreground, which is
+# what systemd's Type=simple expects. Remove it if you prefer default logging.
+ExecStart=/usr/sbin/orkaudio debug
+
+# orkaudio looks for its configuration (config.xml, logging.properties, …)
+# in the working directory.
+WorkingDirectory=/etc/orkaudio
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# orkaudio uses libpcap to sniff traffic and therefore needs elevated
+# privileges. Running as root is the simplest option; alternatively run as a
+# dedicated user with the capabilities below and drop the User comment.
+User=root
+# User=orkaudio
+# AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+# CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+
+# Basic hardening (safe defaults; loosen if orkaudio needs more access).
+NoNewPrivileges=false
+ProtectHome=true
+PrivateTmp=true
+
+# Send stdout/stderr to the journal (view with: journalctl -u oreka -f).
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orkaudio
+
+[Install]
+WantedBy=multi-user.target
